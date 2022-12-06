@@ -19,6 +19,8 @@ def main():
     correct = 0
     total = 0
 
+    observableToken = list(''.join(chr(i) for i in range(255)))
+
     # test samples from positive datapath    
     samples = load_subdir(os.path.join(args.datapath, 'pos'))
     for sample in samples:
