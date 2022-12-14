@@ -1,42 +1,57 @@
 # File: classify.py
 # Purpose:  Starter code for the main experiment for CSC 246 P3 F22.
 
-import argparse  
+import argparse
 from hmm import *
 
+
+def constructor(filename, sample):
+    with open(filename, 'rb') as inp:
+        pi = np.load(inp)
+        A = np.load(inp)
+        B = np.load(inp)
+        N = np.load(inp)
+        observable_token = np.load(inp)
+    return HMM_one(N, observable_token, sample, pi, A, B)
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Program to build and train a neural network.')
-    parser.add_argument('--pos_hmm', default=None, help='Path to the positive class hmm.')
-    parser.add_argument('--neg_hmm', default=None, help='Path to the negative class hmm.')
-    parser.add_argument('--datapath', default=None, help='Path to the test data.')
+    parser = argparse.ArgumentParser(description='Program to test a neural network.')
+    parser.add_argument('--test_path', default=None, help='Path to the test data.')
+    parser.add_argument('--num_test_files', type=int, default=1000, help='Number of test files used.')
 
     args = parser.parse_args()
 
-    # Load HMMs 
-    pos_hmm = load_hmm(args.pos_hmm)
-    neg_hmm = load_hmm(args.neg_hmm)
+    num_files = args.num_test_files
 
     correct = 0
     total = 0
 
-    observableToken = list(''.join(chr(i) for i in range(255)))
-
     # test samples from positive datapath    
-    samples = load_subdir(os.path.join(args.datapath, 'pos'))
+    samples = load_subdir(os.path.join(args.test_path, 'pos'), num_files)
     for sample in samples:
-        if pos_hmm.LL(sample) > neg_hmm.LL(sample):
+        pos_hmm = constructor("pos_model", sample)
+        neg_hmm = constructor("neg_model", sample)
+        pos_prob = pos_hmm.test()
+        neg_prob = neg_hmm.test()
+        if pos_prob > neg_prob:
             correct += 1
         total += 1
-            
+
     # test samples from negative datapath
-    samples = load_subdir(os.path.join(args.datapath, 'neg'))
+    samples = load_subdir(os.path.join(args.test_path, 'neg'), num_files)
     for sample in samples:
-        if pos_hmm.LL(sample) < neg_hmm.LL(sample):
+        pos_hmm = constructor("pos_model", sample)
+        neg_hmm = constructor("neg_model", sample)
+        pos_prob = pos_hmm.test()
+        neg_prob = neg_hmm.test()
+        if pos_prob < neg_prob:
             correct += 1
         total += 1
-        
+
     # report accuracy  (no need for F1 on balanced data)
-    print("%d/%d correct; accuracy %f"%(correct, total, correct/total))
-    
+    print(f"{correct / total}")
+
+
 if __name__ == '__main__':
     main()
