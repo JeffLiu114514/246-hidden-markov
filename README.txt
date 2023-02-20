@@ -1,6 +1,8 @@
 CSC246 Project3
 Junfei Liu (jliu137)
 
+This is a project that implemented hidden markov model. Test report on IMDB dataset can be found in CSC246 Project3 Writeup.pdf
+
 run instruction:
 For classifier:
 you can train the model and test the classifier simply by running
